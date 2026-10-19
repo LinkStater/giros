@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensores do Celular: Giroscópio e Acelerômetro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.5rem;
+            color: #0066cc;
+        }
+        .card {
+            background: #fff;
+            padding: 15px;
+            margin: 15px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 400px;
+            text-align: left;
+        }
+        .card h2 {
+            font-size: 1.2rem;
+            margin-top: 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+        p {
+            margin: 8px 0;
+            font-size: 1rem;
+        }
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #004999;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Monitor de Sensores</h1>
+    <p>Ative os sensores para visualizar os dados em tempo real.</p>
+    
+    <button id="startButton">Ativar Sensores</button>
+
+    <div class="card">
+        <h2>Acelerômetro (com gravidade)</h2>
+        <p><strong>Eixo X:</strong> <span id="accX">0.00</span> m/s²</p>
+        <p><strong>Eixo Y:</strong> <span id="accY">0.00</span> m/s²</p>
+        <p><strong>Eixo Z:</strong> <span id="accZ">0.00</span> m/s²</p>
+    </div>
+
+    <div class="card">
+        <h2>Acelerômetro (sem gravidade)</h2>
+        <p><strong>Eixo X:</strong> <span id="accUGX">0.00</span> m/s²</p>
+        <p><strong>Eixo Y:</strong> <span id="accUGY">0.00</span> m/s²</p>
+        <p><strong>Eixo Z:</strong> <span id="accUGZ">0.00</span> m/s²</p>
+    </div>
+
+    <div class="card">
+        <h2>Giroscópio (Rotação)</h2>
+        <p><strong>Alfa (Z):</strong> <span id="rotAlpha">0.00</span> °/s</p>
+        <p><strong>Beta (X):</strong> <span id="rotBeta">0.00</span> °/s</p>
+        <p><strong>Gama (Y):</strong> <span id="rotGamma">0.00</span> °/s</p>
+    </div>
+
+    <script>
+        const startButton = document.getElementById('startButton');
+
+        function handleMotionEvent(event) {
+            // Acelerômetro com gravidade
+            if (event.accelerationIncludingGravity) {
+                document.getElementById('accX').innerText = event.accelerationIncludingGravity.x?.toFixed(2) || '0';
+                document.getElementById('accY').innerText = event.accelerationIncludingGravity.y?.toFixed(2) || '0';
+                document.getElementById('accZ').innerText = event.accelerationIncludingGravity.z?.toFixed(2) || '0';
+            }
+
+            // Acelerômetro puro (sem gravidade)
+            if (event.acceleration) {
+                document.getElementById('accUGX').innerText = event.acceleration.x?.toFixed(2) || '0';
+                document.getElementById('accUGY').innerText = event.acceleration.y?.toFixed(2) || '0';
+                document.getElementById('accUGZ').innerText = event.acceleration.z?.toFixed(2) || '0';
+            }
+
+            // Giroscópio (Taxa de rotação)
+            if (event.rotationRate) {
+                document.getElementById('rotAlpha').innerText = event.rotationRate.alpha?.toFixed(2) || '0';
+                document.getElementById('rotBeta').innerText = event.beta?.toFixed(2) || '0'; // Alguns dispositivos usam rotação direta
+                document.getElementById('rotGamma').innerText = event.rotationRate.gamma?.toFixed(2) || '0';
+            }
+        }
+
+        function requestSensors() {
+            // Verificação para dispositivos iOS (iPhone/iPad) com exigência de permissão
+            if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+                DeviceMotionEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            window.addEventListener('devicemotion', handleMotionEvent);
+                            startButton.style.display = 'none';
+                        } else {
+                            alert('Permissão negada para os sensores.');
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                // Android e outros navegadores padrão
+                window.addEventListener('devicemotion', handleMotionEvent);
+                startButton.style.display = 'none';
+            }
+        }
+
+        startButton.addEventListener('click', requestSensors);
+    </script>
+</body>
+</html>
